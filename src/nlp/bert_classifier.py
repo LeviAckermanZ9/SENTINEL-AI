@@ -76,8 +76,7 @@ class TransformerClassifier:
             )
 
         if model_key not in self._loaded_models:
-            from transformers import (AutoModelForSequenceClassification,
-                                      AutoTokenizer)
+            from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
             config = self.MODELS[model_key]
             model_name = config["name"]
