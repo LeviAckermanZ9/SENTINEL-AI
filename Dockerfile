@@ -3,7 +3,7 @@
 # ============================================
 
 # Stage 1: Builder — install dependencies
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -14,7 +14,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
 # Stage 2: Production — lean runtime image
-FROM python:3.11-slim AS production
+FROM python:3.14-slim AS production
 
 # Copy installed packages from builder
 COPY --from=builder /root/.local /root/.local
