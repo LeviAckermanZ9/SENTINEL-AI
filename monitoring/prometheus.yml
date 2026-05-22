@@ -1,0 +1,36 @@
+# ============================================
+# SENTINEL-AI — Prometheus Configuration
+# ============================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+# Alert rules
+rule_files:
+  - "alert_rules.yml"
+
+# Alertmanager targets
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - "alertmanager:9093"
+
+# Scrape targets
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # SENTINEL-AI API
+  - job_name: "sentinel-api"
+    metrics_path: "/metrics"
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['host.docker.internal:8000']
+        labels:
+          service: "sentinel-api"
+          environment: "production"

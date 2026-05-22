@@ -1,0 +1,129 @@
+# ============================================
+# SENTINEL-AI — Docker Compose (7 Services)
+# ============================================
+services:
+  # --- Vector Store ---
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: sentinel-chromadb
+    ports:
+      - "8100:8000"
+    volumes:
+      - ./data/chromadb:/chroma/chroma
+    environment:
+      - CHROMA_SERVER_AUTH_CREDENTIALS=sentinel-chroma-token
+      - CHROMA_SERVER_AUTH_PROVIDER=chromadb.auth.token_authn.TokenAuthenticationServerProvider
+      - CHROMA_SERVER_AUTH_TOKEN_TRANSPORT_HEADER=Authorization
+    healthcheck:
+      disable: true
+    restart: unless-stopped
+
+  # --- Main API ---
+  sentinel-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sentinel-api
+    ports:
+      - "8000:8000"
+    depends_on:
+      chromadb:
+        condition: service_healthy
+      prometheus:
+        condition: service_started
+    environment:
+      - MODEL_DIR=/app/models
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - CHROMA_TOKEN=sentinel-chroma-token
+      - HF_TOKEN=${HF_TOKEN:-}
+      - USE_API_LLM=${USE_API_LLM:-false}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-default-dev-secret-change-in-production}
+      - JWT_ALGORITHM=HS256
+      - JWT_EXPIRE_MINUTES=30
+    volumes:
+      - ./models:/app/models
+      - ./results:/app/results
+    restart: unless-stopped
+
+  # --- Knowledge Base Builder (run once) ---
+  kb-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sentinel-kb-builder
+    command: python -m src.rag.knowledge_base
+    depends_on:
+      chromadb:
+        condition: service_healthy
+    environment:
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - CHROMA_TOKEN=sentinel-chroma-token
+      - HF_TOKEN=${HF_TOKEN:-}
+    volumes:
+      - ./data:/app/data
+    profiles:
+      - init
+
+  # --- Streamlit Dashboard ---
+  sentinel-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    container_name: sentinel-ui
+    ports:
+      - "8501:8501"
+    depends_on:
+      - sentinel-api
+    environment:
+      - API_BASE_URL=http://sentinel-api:8000
+      - GRAFANA_URL=http://grafana:3000
+    restart: unless-stopped
+
+  # --- Prometheus ---
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: sentinel-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=7d"
+    restart: unless-stopped
+
+  # --- Grafana ---
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: sentinel-grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=sentinel_admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+
+    volumes:
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana-storage:/var/lib/grafana
+    restart: unless-stopped
+
+  # --- Alertmanager ---
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: sentinel-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+    restart: unless-stopped
+
+volumes:
+  grafana-storage:

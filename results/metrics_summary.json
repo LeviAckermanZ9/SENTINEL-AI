@@ -1,0 +1,111 @@
+{
+  "steps": [
+    {
+      "step": "synthetic_data",
+      "timestamp": "2026-05-04 15:25:29",
+      "metrics": {
+        "train_samples": 800,
+        "val_samples": 200,
+        "features": 504
+      }
+    },
+    {
+      "step": "mlp_training",
+      "timestamp": "2026-05-04 15:25:35",
+      "metrics": {
+        "Adam": {
+          "f1": 0.2846445282247785,
+          "best_epoch": 3
+        },
+        "Adagrad": {
+          "f1": 0.3238015865369175,
+          "best_epoch": 14
+        },
+        "RMSprop": {
+          "f1": 0.2949007176523103,
+          "best_epoch": 5
+        }
+      }
+    },
+    {
+      "step": "autoencoder_training",
+      "timestamp": "2026-05-04 15:25:35",
+      "metrics": {
+        "best_loss": 0.8505907654762268
+      }
+    },
+    {
+      "step": "gan_training",
+      "timestamp": "2026-05-04 15:25:40",
+      "metrics": {
+        "final_g_loss": 3.5830190579096475,
+        "final_d_loss": 0.3894108980894089
+      }
+    },
+    {
+      "step": "vae_training",
+      "timestamp": "2026-05-04 15:25:41",
+      "metrics": {
+        "final_loss": 1.0085632460457938
+      }
+    },
+    {
+      "step": "feature_extraction",
+      "timestamp": "2026-05-04 15:25:59",
+      "metrics": {
+        "vector_dim": 62,
+        "topic_cluster": 1
+      }
+    },
+    {
+      "step": "bilstm_test",
+      "timestamp": "2026-05-04 15:25:59",
+      "metrics": {
+        "attn_sum_mean": 1.0,
+        "output_shape": [
+          4,
+          3
+        ]
+      }
+    },
+    {
+      "step": "cnn_test",
+      "timestamp": "2026-05-04 15:25:59",
+      "metrics": {
+        "textcnn_shape": [
+          4,
+          4
+        ],
+        "imagecnn_shape": [
+          1,
+          4
+        ],
+        "gradcam_shape": [
+          4,
+          4
+        ]
+      }
+    },
+    {
+      "step": "gan_generation",
+      "timestamp": "2026-05-04 15:25:59",
+      "metrics": {
+        "samples_shape": [
+          50,
+          504
+        ]
+      }
+    },
+    {
+      "step": "pipeline_complete",
+      "timestamp": "2026-05-04 15:25:59",
+      "metrics": {
+        "total_time_seconds": 30.1
+      }
+    }
+  ],
+  "metadata": {
+    "started_at": "2026-05-04 15:25:29",
+    "last_updated": "2026-05-04 15:25:59"
+  }
+}

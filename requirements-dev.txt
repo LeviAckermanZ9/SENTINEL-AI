@@ -1,0 +1,23 @@
+-r requirements.txt
+
+# Testing
+pytest
+pytest-asyncio
+pytest-cov
+httpx
+
+# Code Quality
+black
+flake8
+isort
+mypy
+
+# Security Scanning
+bandit
+safety
+
+# Notebooks
+jupyter
+ipykernel
+matplotlib
+seaborn

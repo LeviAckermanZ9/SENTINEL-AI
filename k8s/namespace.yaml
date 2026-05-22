@@ -1,0 +1,10 @@
+# ============================================
+# SENTINEL-AI — Kubernetes Namespace
+# ============================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sentinel-prod
+  labels:
+    app: sentinel-ai
+    environment: production

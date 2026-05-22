@@ -1,0 +1,113 @@
+# ============================================
+# SENTINEL-AI — CD Pipeline
+# Build → Push to GHCR → Deploy Staging → Deploy Production
+# ============================================
+
+name: CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ---- Build & Push Docker Image ----
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=sha-
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ---- Deploy to Staging ----
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubeconfig
+        run: echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+
+      - name: Deploy to staging
+        run: |
+          kubectl set image deployment/sentinel-api \
+            sentinel-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }} \
+            -n sentinel-staging
+
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/sentinel-api -n sentinel-staging --timeout=300s
+
+      - name: Smoke test staging
+        run: |
+          STAGING_URL=$(kubectl get ingress sentinel-ingress -n sentinel-staging -o jsonpath='{.spec.rules[0].host}')
+          curl -f http://${STAGING_URL}/health || exit 1
+
+  # ---- Deploy to Production ----
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubeconfig
+        run: echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+
+      - name: Deploy to production
+        run: |
+          kubectl set image deployment/sentinel-api \
+            sentinel-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }} \
+            -n sentinel-prod
+
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/sentinel-api -n sentinel-prod --timeout=300s
+
+      - name: Production health check
+        run: |
+          PROD_URL=$(kubectl get ingress sentinel-ingress -n sentinel-prod -o jsonpath='{.spec.rules[0].host}')
+          curl -f http://${PROD_URL}/health || exit 1

@@ -1,0 +1,66 @@
+# ============================================
+# SENTINEL-AI — Prometheus Alert Rules
+# ============================================
+
+groups:
+  - name: sentinel_alerts
+    rules:
+      # High fake news detection rate
+      - alert: HighFakeNewsDetectionRate
+        expr: |
+          (
+            sum(rate(sentinel_predictions_total{predicted_class="FAKE_NEWS"}[5m]))
+            /
+            sum(rate(sentinel_predictions_total[5m]))
+          ) > 0.30
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High fake news detection rate"
+          description: "Fake news detection rate has exceeded 30% for the last 2 minutes. Current rate: {{ $value | humanizePercentage }}"
+
+      # High inference latency
+      - alert: HighInferenceLatency
+        expr: histogram_quantile(0.95, rate(sentinel_inference_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High inference latency detected"
+          description: "P95 inference latency has exceeded 500ms for the last 5 minutes. Current P95: {{ $value }}s"
+
+      # Model server down
+      - alert: ModelServerDown
+        expr: up{job="sentinel-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SENTINEL-AI API server is down"
+          description: "The SENTINEL-AI API server has been unreachable for more than 1 minute."
+
+      # High RAG latency
+      - alert: HighRAGLatency
+        expr: histogram_quantile(0.95, rate(sentinel_rag_latency_seconds_bucket[5m])) > 3.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High RAG processing latency"
+          description: "RAG P95 latency has exceeded 3 seconds. Current P95: {{ $value }}s"
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(sentinel_predictions_total{predicted_class="ERROR"}[5m]))
+            /
+            sum(rate(sentinel_predictions_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate in predictions"
+          description: "Error rate has exceeded 5% for the last 5 minutes."

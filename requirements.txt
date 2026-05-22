@@ -1,0 +1,72 @@
+# Deep Learning
+torch
+torchvision
+torchaudio
+
+# NLP & Transformers
+transformers
+tokenizers
+datasets
+sentence-transformers
+evaluate
+rouge-score
+sacrebleu
+
+# HuggingFace Ecosystem
+huggingface-hub
+langchain
+langchain-huggingface
+langchain-community
+
+# Classical NLP
+spacy
+nltk
+scikit-learn
+
+# RAG / Vector Store
+chromadb
+ragas
+
+# Explainability
+shap
+lime
+captum
+
+# Word Embeddings
+gensim
+
+# Data & Feature Engineering
+numpy
+pandas
+scipy
+imbalanced-learn
+
+# API Serving
+fastapi
+uvicorn[standard]
+pydantic
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
+httpx
+
+# Monitoring
+prometheus-client
+prometheus-fastapi-instrumentator
+
+# Dashboard
+streamlit
+plotly
+
+# Utilities
+python-dotenv
+requests
+tqdm
+PyYAML
+Pillow
+opencv-python-headless
+librosa
+
+# Data Loading
+PyMuPDF
+yfinance

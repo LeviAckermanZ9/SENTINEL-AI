@@ -1,0 +1,136 @@
+# ============================================
+# SENTINEL-AI — CI Pipeline
+# Lint → Security → Test (3 stages)
+# ============================================
+
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  # ---- Stage 1: Lint & Format ----
+  lint-and-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-lint-${{ hashFiles('requirements-dev.txt') }}
+
+      - name: Install lint tools
+        run: pip install black flake8 isort
+
+      - name: Check Black formatting
+        run: black --check src/ tests/ scripts/
+
+      - name: Check isort imports
+        run: isort --check-only src/ tests/ scripts/
+
+      - name: Flake8 lint
+        run: flake8 src/ tests/ scripts/ --max-line-length=100 --extend-ignore=E203,W503
+
+  # ---- Stage 2: Security Scan ----
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: lint-and-format
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: pip install bandit safety
+
+      - name: Bandit SAST scan
+        run: bandit -r src/ -ll -ii -x src/dashboard/
+
+      - name: Safety dependency check
+        run: safety check -r requirements.txt
+        continue-on-error: true
+
+  # ---- Stage 3: Test ----
+  test:
+    runs-on: ubuntu-latest
+    needs: security-scan
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-test-${{ hashFiles('requirements-dev.txt') }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          python -m spacy download en_core_web_sm
+          python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab'); nltk.download('wordnet'); nltk.download('averaged_perceptron_tagger'); nltk.download('stopwords'); nltk.download('omw-1.4')"
+
+      - name: Run tests with coverage
+        run: pytest tests/ --cov=src --cov-fail-under=70 -v --tb=short
+
+      - name: Upload coverage
+        if: always()
+        uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: false
+
+  # ---- Stage 4: RAG Tests ----
+  test-rag:
+    runs-on: ubuntu-latest
+    needs: security-scan
+    services:
+      chromadb:
+        image: chromadb/chroma:latest
+        ports:
+          - 8000:8000
+        options: >-
+          --health-cmd "curl -f http://localhost:8000/api/v1/heartbeat || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          python -m spacy download en_core_web_sm
+          python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab'); nltk.download('wordnet'); nltk.download('averaged_perceptron_tagger'); nltk.download('stopwords'); nltk.download('omw-1.4')"
+
+      - name: Run RAG tests
+        env:
+          CHROMA_HOST: localhost
+          CHROMA_PORT: 8000
+        run: pytest tests/test_rag.py -v --tb=short
