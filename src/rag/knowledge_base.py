@@ -248,8 +248,8 @@ def ingest_fever(
     chunk_size: int = 300,
     overlap: int = 50,
 ) -> int:
-    import json
     import gzip
+    import json
 
     raw_dir = "./data/raw"
     os.makedirs(raw_dir, exist_ok=True)

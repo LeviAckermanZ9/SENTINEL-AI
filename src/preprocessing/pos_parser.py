@@ -38,7 +38,8 @@ class PosParser:
         try:
             self.nlp = spacy.load(model_name)
         except OSError:
-            import subprocess, sys
+            import subprocess
+            import sys
 
             subprocess.check_call(
                 [sys.executable, "-m", "spacy", "download", model_name],

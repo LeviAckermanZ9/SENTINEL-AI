@@ -10,15 +10,9 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from src.monitoring.metrics import (
-    CONTRADICTIONS_TOTAL,
-    RAG_AVG_SIM,
-    RAG_LATENCY,
-    RAG_REQUESTS,
-    CHROMA_HITS,
-    PREDICTIONS,
-    LATENCY,
-)
+from src.monitoring.metrics import (CHROMA_HITS, CONTRADICTIONS_TOTAL, LATENCY,
+                                    PREDICTIONS, RAG_AVG_SIM, RAG_LATENCY,
+                                    RAG_REQUESTS)
 
 router = APIRouter(prefix="/fact-check", tags=["fact-check"])
 

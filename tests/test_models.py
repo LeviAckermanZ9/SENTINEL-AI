@@ -7,11 +7,11 @@ import numpy as np
 import pytest
 import torch
 
-from src.models.mlp_classifier import MLPClassifier
-from src.models.bilstm_attention import BiLSTMAttention
-from src.models.cnn_moderation import TextCNN, ImageCNN
 from src.models.autoencoder import NewsAutoencoder
-from src.models.gan_augmentor import Generator, Discriminator
+from src.models.bilstm_attention import BiLSTMAttention
+from src.models.cnn_moderation import ImageCNN, TextCNN
+from src.models.gan_augmentor import Discriminator, Generator
+from src.models.mlp_classifier import MLPClassifier
 from src.models.vae_explorer import VAE
 
 # ================================================================

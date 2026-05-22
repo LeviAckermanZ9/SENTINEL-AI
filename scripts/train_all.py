@@ -144,8 +144,8 @@ def main():
     # Step 6: Feature extraction test
     print("\n[Step 6/9] Testing Feature Extractor pipeline...")
     from src.preprocessing.cleaner import TextCleaner
-    from src.preprocessing.pos_parser import PosParser
     from src.preprocessing.feature_extractor import FeatureExtractor
+    from src.preprocessing.pos_parser import PosParser
 
     cleaner = TextCleaner()
     parser = PosParser()
@@ -192,7 +192,7 @@ def main():
 
     # Step 8: TextCNN + ImageCNN forward pass test
     print("\n[Step 8/9] Testing CNN Models...")
-    from src.models.cnn_moderation import TextCNN, ImageCNN
+    from src.models.cnn_moderation import ImageCNN, TextCNN
 
     text_cnn = TextCNN()
     x_text = torch.randint(0, 30000, (4, 50))
@@ -215,7 +215,7 @@ def main():
 
     # Step 9: GAN sample generation
     print("\n[Step 9/9] Generating GAN samples...")
-    from src.models.gan_augmentor import generate_samples, Generator
+    from src.models.gan_augmentor import Generator, generate_samples
 
     gen = Generator()
     samples = generate_samples(gen, class_label=1, num_samples=50)

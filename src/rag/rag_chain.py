@@ -139,9 +139,9 @@ class SentinelRAGChain:
 
     def _load_local_llm(self):
         """Load local Flan-T5-XL via HuggingFace pipeline."""
+        import torch
         from langchain_huggingface import HuggingFacePipeline
         from transformers import pipeline as hf_pipeline
-        import torch
 
         dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 

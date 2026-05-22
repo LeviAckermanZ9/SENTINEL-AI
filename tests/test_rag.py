@@ -152,8 +152,9 @@ class TestRetrieverIntegration:
 
     def _create_test_collection(self):
         """Create an ephemeral ChromaDB collection with 5 test docs."""
-        import chromadb
         import uuid
+
+        import chromadb
         from sentence_transformers import SentenceTransformer
 
         client = chromadb.EphemeralClient()

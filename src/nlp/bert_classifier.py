@@ -76,7 +76,8 @@ class TransformerClassifier:
             )
 
         if model_key not in self._loaded_models:
-            from transformers import AutoModelForSequenceClassification, AutoTokenizer
+            from transformers import (AutoModelForSequenceClassification,
+                                      AutoTokenizer)
 
             config = self.MODELS[model_key]
             model_name = config["name"]
@@ -189,8 +190,8 @@ class TransformerClassifier:
         Returns:
             Configured HuggingFace Trainer instance.
         """
-        from transformers import TrainingArguments, Trainer
         import evaluate as hf_evaluate
+        from transformers import Trainer, TrainingArguments
 
         model, tokenizer = self._load_model_and_tokenizer(model_key, num_labels)
 

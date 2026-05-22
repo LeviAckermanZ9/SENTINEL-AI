@@ -7,9 +7,9 @@ import numpy as np
 import pytest
 
 from src.preprocessing.cleaner import TextCleaner
-from src.preprocessing.tokenizer import Tokenizer
-from src.preprocessing.pos_parser import PosParser
 from src.preprocessing.feature_extractor import FeatureExtractor
+from src.preprocessing.pos_parser import PosParser
+from src.preprocessing.tokenizer import Tokenizer
 
 # ================================================================
 # TextCleaner Tests

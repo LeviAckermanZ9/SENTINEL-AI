@@ -48,7 +48,8 @@ class NERPipeline:
             try:
                 self._nlp = spacy.load("en_core_web_sm")
             except OSError:
-                import subprocess, sys
+                import subprocess
+                import sys
 
                 subprocess.check_call(
                     [sys.executable, "-m", "spacy", "download", "en_core_web_sm"],

@@ -6,11 +6,11 @@ Provides TF-IDF vectorization, KMeans topic clustering, bigram perplexity proxy,
 and final 504-dim feature vector assembly for the MLP classifier.
 """
 
-import numpy as np
 from typing import Any, Dict, List, Optional, Union
 
-from sklearn.feature_extraction.text import TfidfVectorizer
+import numpy as np
 from sklearn.cluster import KMeans
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 class FeatureExtractor:

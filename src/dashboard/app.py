@@ -1,7 +1,12 @@
 """SENTINEL-AI — Security Intelligence Command Center Dashboard v3.0"""
 
-import streamlit as st, requests, json, time, plotly.graph_objects as go
+import json
+import time
 from collections import Counter
+
+import plotly.graph_objects as go
+import requests
+import streamlit as st
 
 st.set_page_config(
     page_title="SENTINEL-AI", page_icon="\U0001f6e1\ufe0f", layout="wide"

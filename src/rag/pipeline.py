@@ -11,8 +11,8 @@ import time
 from typing import Any, Dict, Optional
 
 from src.rag.claim_extractor import ClaimExtractor
-from src.rag.retriever import SentinelRetriever
 from src.rag.rag_chain import SentinelRAGChain
+from src.rag.retriever import SentinelRetriever
 
 
 class SentinelRAGPipeline:
