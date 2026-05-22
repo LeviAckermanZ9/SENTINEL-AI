@@ -73,7 +73,12 @@ class Tokenizer:
         self.lowercase = lowercase
 
         # Initialize vocabulary with special tokens
-        self.special_tokens = [self.PAD_TOKEN, self.UNK_TOKEN, self.BOS_TOKEN, self.EOS_TOKEN]
+        self.special_tokens = [
+            self.PAD_TOKEN,
+            self.UNK_TOKEN,
+            self.BOS_TOKEN,
+            self.EOS_TOKEN,
+        ]
         self.token2idx: Dict[str, int] = {}
         self.idx2token: Dict[int, str] = {}
         self.token_counts: Counter = Counter()
@@ -261,7 +266,9 @@ class Tokenizer:
             List of encoded index lists.
         """
         return [
-            self.encode(text, max_length=max_length, add_special_tokens=add_special_tokens)
+            self.encode(
+                text, max_length=max_length, add_special_tokens=add_special_tokens
+            )
             for text in texts
         ]
 

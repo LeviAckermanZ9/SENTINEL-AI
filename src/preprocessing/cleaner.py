@@ -25,7 +25,9 @@ for resource in [
     "averaged_perceptron_tagger",
 ]:
     try:
-        nltk.data.find(f"tokenizers/{resource}" if "punkt" in resource else f"corpora/{resource}")
+        nltk.data.find(
+            f"tokenizers/{resource}" if "punkt" in resource else f"corpora/{resource}"
+        )
     except LookupError:
         nltk.download(resource, quiet=True)
 

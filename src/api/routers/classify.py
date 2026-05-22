@@ -20,7 +20,9 @@ MODELS = {}
 
 
 class ClassifyRequest(BaseModel):
-    text: str = Field(..., min_length=20, max_length=5000, description="Text to classify")
+    text: str = Field(
+        ..., min_length=20, max_length=5000, description="Text to classify"
+    )
     include_explanation: bool = Field(True, description="Include SHAP/LIME explanation")
     include_summary: bool = Field(True, description="Include BART summary")
 
@@ -55,8 +57,16 @@ async def classify_text(request: ClassifyRequest):
         pos_parser = MODELS.get("pos_parser")
         extractor = MODELS.get("feature_extractor")
 
-        cleaned = cleaner.clean(text) if cleaner else {"cleaned_text": text, "tokens": text.split()}
-        pos_result = pos_parser.parse(text) if pos_parser else {"adjective_density": 0.0, "adj_noun_ratio": 0.0}
+        cleaned = (
+            cleaner.clean(text)
+            if cleaner
+            else {"cleaned_text": text, "tokens": text.split()}
+        )
+        pos_result = (
+            pos_parser.parse(text)
+            if pos_parser
+            else {"adjective_density": 0.0, "adj_noun_ratio": 0.0}
+        )
 
         adj_density = pos_result.get("adjective_density", 0.0)
         adj_noun_ratio = pos_result.get("adj_noun_ratio", 0.0)

@@ -30,6 +30,7 @@ class SummarizeResponse(BaseModel):
 async def summarize_text(request: SummarizeRequest):
     """Generate abstractive summary using BART or T5."""
     import time
+
     start = time.time()
 
     summarizer = MODELS.get("summarizer")

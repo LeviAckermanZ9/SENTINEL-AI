@@ -44,7 +44,9 @@ class SentinelRAGPipeline:
             chroma_port: ChromaDB port override.
             persist_dir: Local ChromaDB path.
         """
-        self.use_api_llm = use_api_llm or os.environ.get("USE_API_LLM", "false").lower() == "true"
+        self.use_api_llm = (
+            use_api_llm or os.environ.get("USE_API_LLM", "false").lower() == "true"
+        )
         self.use_heuristic = use_heuristic
 
         self.claim_extractor = ClaimExtractor()
@@ -114,7 +116,9 @@ class SentinelRAGPipeline:
         if documents:
             try:
                 if self.use_heuristic:
-                    chain_result = self.rag_chain.run_without_llm(primary_claim, documents)
+                    chain_result = self.rag_chain.run_without_llm(
+                        primary_claim, documents
+                    )
                 else:
                     chain_result = self.rag_chain.run(primary_claim, documents)
             except Exception:
@@ -133,12 +137,16 @@ class SentinelRAGPipeline:
         rerank_scores = evidence.get("rerank_scores", []) if documents else []
 
         for i, (doc, meta) in enumerate(zip(documents, metadatas)):
-            retrieved_docs.append({
-                "source": meta.get("source", "unknown"),
-                "verdict_label": meta.get("verdict", "unknown"),
-                "relevance": round(rerank_scores[i], 4) if i < len(rerank_scores) else 0.0,
-                "excerpt": doc[:300],
-            })
+            retrieved_docs.append(
+                {
+                    "source": meta.get("source", "unknown"),
+                    "verdict_label": meta.get("verdict", "unknown"),
+                    "relevance": (
+                        round(rerank_scores[i], 4) if i < len(rerank_scores) else 0.0
+                    ),
+                    "excerpt": doc[:300],
+                }
+            )
 
         elapsed_ms = (time.time() - start_time) * 1000
 

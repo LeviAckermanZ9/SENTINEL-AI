@@ -45,8 +45,7 @@ class FactCheckOutputParser:
 
         # VERDICT
         verdict_match = re.search(
-            r"VERDICT\s*:\s*(SUPPORTED|CONTRADICTED|UNVERIFIABLE)",
-            text, re.IGNORECASE
+            r"VERDICT\s*:\s*(SUPPORTED|CONTRADICTED|UNVERIFIABLE)", text, re.IGNORECASE
         )
         if verdict_match:
             result["verdict"] = verdict_match.group(1).upper()
@@ -59,8 +58,7 @@ class FactCheckOutputParser:
 
         # CONFIDENCE
         conf_match = re.search(
-            r"CONFIDENCE\s*:\s*(HIGH|MEDIUM|LOW)",
-            text, re.IGNORECASE
+            r"CONFIDENCE\s*:\s*(HIGH|MEDIUM|LOW)", text, re.IGNORECASE
         )
         if conf_match:
             result["confidence"] = conf_match.group(1).upper()
@@ -72,8 +70,7 @@ class FactCheckOutputParser:
 
         # REASONING
         reasoning_match = re.search(
-            r"REASONING\s*:\s*(.+?)(?=KEY_SOURCES|$)",
-            text, re.IGNORECASE | re.DOTALL
+            r"REASONING\s*:\s*(.+?)(?=KEY_SOURCES|$)", text, re.IGNORECASE | re.DOTALL
         )
         if reasoning_match:
             result["reasoning"] = reasoning_match.group(1).strip()
@@ -82,8 +79,7 @@ class FactCheckOutputParser:
 
         # KEY_SOURCES
         sources_match = re.search(
-            r"KEY_SOURCES\s*:\s*(.+?)$",
-            text, re.IGNORECASE | re.DOTALL
+            r"KEY_SOURCES\s*:\s*(.+?)$", text, re.IGNORECASE | re.DOTALL
         )
         if sources_match:
             result["key_sources"] = sources_match.group(1).strip()
@@ -134,7 +130,9 @@ class SentinelRAGChain:
     """
 
     def __init__(self, use_api: bool = False):
-        self.use_api = use_api or os.environ.get("USE_API_LLM", "false").lower() == "true"
+        self.use_api = (
+            use_api or os.environ.get("USE_API_LLM", "false").lower() == "true"
+        )
         self.parser = FactCheckOutputParser()
         self._llm = None
         self._chain = None
@@ -222,10 +220,12 @@ class SentinelRAGChain:
         )
 
         try:
-            raw_output = chain.invoke({
-                "context_docs": context,
-                "claim": claim,
-            })
+            raw_output = chain.invoke(
+                {
+                    "context_docs": context,
+                    "claim": claim,
+                }
+            )
 
             # Handle different output types
             if hasattr(raw_output, "content"):
@@ -259,8 +259,23 @@ class SentinelRAGChain:
         support_count = 0
         contradict_count = 0
 
-        contradict_keywords = ["false", "debunked", "incorrect", "myth", "hoax", "pants-fire", "misleading"]
-        support_keywords = ["true", "confirmed", "verified", "supports", "accurate", "correct"]
+        contradict_keywords = [
+            "false",
+            "debunked",
+            "incorrect",
+            "myth",
+            "hoax",
+            "pants-fire",
+            "misleading",
+        ]
+        support_keywords = [
+            "true",
+            "confirmed",
+            "verified",
+            "supports",
+            "accurate",
+            "correct",
+        ]
 
         for doc in evidence_docs:
             doc_lower = doc.lower()

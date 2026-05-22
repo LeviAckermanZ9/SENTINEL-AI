@@ -34,6 +34,7 @@ class SentimentAnalyzer:
         """Lazy-load FinBERT sentiment pipeline."""
         if self._finbert_pipeline is None:
             from transformers import pipeline
+
             self._finbert_pipeline = pipeline(
                 "sentiment-analysis",
                 model="ProsusAI/finbert",
@@ -44,6 +45,7 @@ class SentimentAnalyzer:
         """Lazy-load Twitter-RoBERTa sentiment pipeline."""
         if self._roberta_pipeline is None:
             from transformers import pipeline
+
             self._roberta_pipeline = pipeline(
                 "sentiment-analysis",
                 model="cardiffnlp/twitter-roberta-base-sentiment-latest",
@@ -161,6 +163,4 @@ class SentimentAnalyzer:
         """Analyze sentiment for a batch of texts."""
         if adj_densities is None:
             adj_densities = [0.0] * len(texts)
-        return [
-            self.analyze(text, adj) for text, adj in zip(texts, adj_densities)
-        ]
+        return [self.analyze(text, adj) for text, adj in zip(texts, adj_densities)]

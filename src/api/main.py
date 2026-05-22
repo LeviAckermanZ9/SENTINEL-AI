@@ -37,6 +37,7 @@ async def lifespan(app: FastAPI):
     # 1. Cleaner
     try:
         from src.preprocessing.cleaner import TextCleaner
+
         MODELS["cleaner"] = TextCleaner()
         logger.info("[1/13] TextCleaner loaded")
     except Exception as e:
@@ -46,6 +47,7 @@ async def lifespan(app: FastAPI):
     # 2. POS Parser
     try:
         from src.preprocessing.pos_parser import PosParser
+
         MODELS["pos_parser"] = PosParser()
         logger.info("[2/13] PosParser loaded")
     except Exception as e:
@@ -55,6 +57,7 @@ async def lifespan(app: FastAPI):
     # 3. Feature Extractor (needs fit — will be fitted in classify if needed)
     try:
         from src.preprocessing.feature_extractor import FeatureExtractor
+
         fe = FeatureExtractor()
         # Fit on dummy corpus so transform() works
         fe.fit(["dummy text for initialization"] * 10)
@@ -67,6 +70,7 @@ async def lifespan(app: FastAPI):
     # 4. MLP Classifier
     try:
         from src.models.mlp_classifier import MLPClassifier
+
         MODELS["mlp"] = MLPClassifier(input_dim=504, num_classes=4)
         logger.info("[4/13] MLPClassifier loaded")
     except Exception as e:
@@ -76,6 +80,7 @@ async def lifespan(app: FastAPI):
     # 5. BiLSTM Attention
     try:
         from src.models.bilstm_attention import BiLSTMAttention
+
         MODELS["bilstm"] = BiLSTMAttention()
         logger.info("[5/13] BiLSTMAttention loaded")
     except Exception as e:
@@ -85,6 +90,7 @@ async def lifespan(app: FastAPI):
     # 6. TextCNN
     try:
         from src.models.cnn_moderation import TextCNN
+
         MODELS["textcnn"] = TextCNN()
         logger.info("[6/13] TextCNN loaded")
     except Exception as e:
@@ -94,6 +100,7 @@ async def lifespan(app: FastAPI):
     # 7. Autoencoder
     try:
         from src.models.autoencoder import NewsAutoencoder
+
         MODELS["autoencoder"] = NewsAutoencoder()
         logger.info("[7/13] NewsAutoencoder loaded")
     except Exception as e:
@@ -103,6 +110,7 @@ async def lifespan(app: FastAPI):
     # 8. BERT Classifier (lazy — no model download at startup)
     try:
         from src.nlp.bert_classifier import TransformerClassifier
+
         MODELS["bert_classifier"] = TransformerClassifier()
         logger.info("[8/13] TransformerClassifier loaded (lazy)")
     except Exception as e:
@@ -112,6 +120,7 @@ async def lifespan(app: FastAPI):
     # 9. Summarizer (lazy — no model download at startup)
     try:
         from src.nlp.bart_summarizer import SummarizerModule
+
         MODELS["summarizer"] = SummarizerModule()
         logger.info("[9/13] SummarizerModule loaded (lazy)")
     except Exception as e:
@@ -121,6 +130,7 @@ async def lifespan(app: FastAPI):
     # 10. NER Pipeline (lazy)
     try:
         from src.nlp.ner_pipeline import NERPipeline
+
         MODELS["ner_pipeline"] = NERPipeline()
         logger.info("[10/13] NERPipeline loaded (lazy)")
     except Exception as e:
@@ -130,6 +140,7 @@ async def lifespan(app: FastAPI):
     # 11. Sentiment Analyzer (lazy)
     try:
         from src.nlp.sentiment import SentimentAnalyzer
+
         MODELS["sentiment"] = SentimentAnalyzer()
         logger.info("[11/13] SentimentAnalyzer loaded (lazy)")
     except Exception as e:
@@ -139,6 +150,7 @@ async def lifespan(app: FastAPI):
     # 12. Explainer
     try:
         from src.models.explainer import ModelExplainer
+
         MODELS["explainer"] = ModelExplainer(model=MODELS.get("mlp"))
         logger.info("[12/13] ModelExplainer loaded")
     except Exception as e:
@@ -148,6 +160,7 @@ async def lifespan(app: FastAPI):
     # 13. RAG Pipeline (may fail if ChromaDB/KB not built)
     try:
         from src.rag.pipeline import SentinelRAGPipeline
+
         MODELS["rag_pipeline"] = SentinelRAGPipeline(use_heuristic=True)
         logger.info("[13/13] RAG Pipeline loaded")
     except Exception as e:

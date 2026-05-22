@@ -28,6 +28,7 @@ class QAModule:
         """Lazy-load QA pipeline."""
         if self._pipeline is None:
             from transformers import pipeline
+
             self._pipeline = pipeline(
                 "question-answering",
                 model=self._model_name,
@@ -83,9 +84,7 @@ class QAModule:
         contexts: List[str],
     ) -> List[Dict[str, Any]]:
         """Answer multiple questions with corresponding contexts."""
-        return [
-            self.answer(q, c) for q, c in zip(questions, contexts)
-        ]
+        return [self.answer(q, c) for q, c in zip(questions, contexts)]
 
     def is_answerable(
         self,

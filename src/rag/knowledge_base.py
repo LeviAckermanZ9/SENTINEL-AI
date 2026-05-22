@@ -65,7 +65,11 @@ def _format_liar_entry(statement: str, label: str, justification: str = "") -> s
         "true": "TRUE",
     }
     verdict = verdict_map.get(str(label).lower(), str(label).upper())
-    evidence = justification.strip() if justification else "No additional justification provided."
+    evidence = (
+        justification.strip()
+        if justification
+        else "No additional justification provided."
+    )
     return f"CLAIM: {statement.strip()} VERDICT: {verdict} EVIDENCE: {evidence}"
 
 
@@ -92,7 +96,9 @@ def _download_liar_tsv(split: str, raw_dir: str) -> str:
             print(f"    Downloading {filename} from {url[:60]}...")
             urllib.request.urlretrieve(url, local_path)
             if os.path.exists(local_path) and os.path.getsize(local_path) > 1000:
-                print(f"    Downloaded {filename} ({os.path.getsize(local_path)//1024}KB)")
+                print(
+                    f"    Downloaded {filename} ({os.path.getsize(local_path)//1024}KB)"
+                )
                 return local_path
         except Exception as e:
             print(f"    URL failed: {e}")
@@ -135,10 +141,21 @@ def ingest_liar_plus(
 
     # LIAR TSV column names (no header row in the files)
     cols = [
-        "id", "label", "statement", "subject", "speaker",
-        "job_title", "state", "party", "barely_true_count",
-        "false_count", "half_true_count", "mostly_true_count",
-        "pants_on_fire_count", "context", "justification",
+        "id",
+        "label",
+        "statement",
+        "subject",
+        "speaker",
+        "job_title",
+        "state",
+        "party",
+        "barely_true_count",
+        "false_count",
+        "half_true_count",
+        "mostly_true_count",
+        "pants_on_fire_count",
+        "context",
+        "justification",
     ]
 
     total_chunks = 0
@@ -187,13 +204,15 @@ def ingest_liar_plus(
                 doc_id = f"liar_{split}_{abs(hash(statement + str(j))) % 10**9}"
                 doc_ids.append(doc_id)
                 doc_texts.append(chunk)
-                doc_metas.append({
-                    "source": "liar",
-                    "split": split,
-                    "verdict": label,
-                    "speaker": speaker[:200],
-                    "original_claim": statement[:500],
-                })
+                doc_metas.append(
+                    {
+                        "source": "liar",
+                        "split": split,
+                        "verdict": label,
+                        "speaker": speaker[:200],
+                        "original_claim": statement[:500],
+                    }
+                )
 
                 if len(doc_ids) >= batch_size:
                     embeddings = embedding_fn(doc_texts)
@@ -287,7 +306,9 @@ def ingest_fever(
                     continue
 
                 claim = str(row.get("claim", "") or "").strip()
-                label_raw = str(row.get("label", "NOT ENOUGH INFO") or "NOT ENOUGH INFO")
+                label_raw = str(
+                    row.get("label", "NOT ENOUGH INFO") or "NOT ENOUGH INFO"
+                )
                 label_str = label_map.get(label_raw, "NOT ENOUGH INFO")
 
                 if not claim or len(claim.split()) < 5:
@@ -302,12 +323,14 @@ def ingest_fever(
                     doc_id = f"fever_{count}_{j}"
                     doc_ids.append(doc_id)
                     doc_texts.append(chunk)
-                    doc_metas.append({
-                        "source": "fever",
-                        "verdict": label_str,
-                        "speaker": "unknown",
-                        "original_claim": claim[:500],
-                    })
+                    doc_metas.append(
+                        {
+                            "source": "fever",
+                            "verdict": label_str,
+                            "speaker": "unknown",
+                            "original_claim": claim[:500],
+                        }
+                    )
 
                     if len(doc_ids) >= batch_size:
                         embeddings = embedding_fn(doc_texts)
@@ -328,8 +351,10 @@ def ingest_fever(
     if doc_ids:
         embeddings = embedding_fn(doc_texts)
         collection.add(
-            ids=doc_ids, documents=doc_texts,
-            embeddings=embeddings, metadatas=doc_metas,
+            ids=doc_ids,
+            documents=doc_texts,
+            embeddings=embeddings,
+            metadatas=doc_metas,
         )
         total_chunks += len(doc_ids)
 
@@ -370,8 +395,13 @@ def ingest_snopes_csv(
     doc_ids, doc_texts, doc_metas = [], [], []
 
     claim_col = next((c for c in df.columns if "claim" in c.lower()), None)
-    verdict_col = next((c for c in df.columns if "verdict" in c.lower() or "rating" in c.lower()), None)
-    article_col = next((c for c in df.columns if "article" in c.lower() or "content" in c.lower()), None)
+    verdict_col = next(
+        (c for c in df.columns if "verdict" in c.lower() or "rating" in c.lower()), None
+    )
+    article_col = next(
+        (c for c in df.columns if "article" in c.lower() or "content" in c.lower()),
+        None,
+    )
 
     if claim_col is None:
         print("  Snopes: no 'claim' column found, skipping.")
@@ -394,18 +424,22 @@ def ingest_snopes_csv(
             doc_id = f"snopes_{i}_{j}"
             doc_ids.append(doc_id)
             doc_texts.append(chunk)
-            doc_metas.append({
-                "source": "snopes",
-                "verdict": verdict,
-                "speaker": "unknown",
-                "original_claim": claim[:500],
-            })
+            doc_metas.append(
+                {
+                    "source": "snopes",
+                    "verdict": verdict,
+                    "speaker": "unknown",
+                    "original_claim": claim[:500],
+                }
+            )
 
             if len(doc_ids) >= batch_size:
                 embeddings = embedding_fn(doc_texts)
                 collection.add(
-                    ids=doc_ids, documents=doc_texts,
-                    embeddings=embeddings, metadatas=doc_metas,
+                    ids=doc_ids,
+                    documents=doc_texts,
+                    embeddings=embeddings,
+                    metadatas=doc_metas,
                 )
                 total_chunks += len(doc_ids)
                 doc_ids, doc_texts, doc_metas = [], [], []
@@ -413,8 +447,10 @@ def ingest_snopes_csv(
     if doc_ids:
         embeddings = embedding_fn(doc_texts)
         collection.add(
-            ids=doc_ids, documents=doc_texts,
-            embeddings=embeddings, metadatas=doc_metas,
+            ids=doc_ids,
+            documents=doc_texts,
+            embeddings=embeddings,
+            metadatas=doc_metas,
         )
         total_chunks += len(doc_ids)
 
@@ -521,7 +557,8 @@ def build_knowledge_base(
         print("\n--- Ingesting FEVER dataset ---")
         fever_sample = eval_sample_size - total if eval_mode else 5000
         fever_count = ingest_fever(
-            collection, embed_fn,
+            collection,
+            embed_fn,
             sample_size=max(fever_sample, 100),
         )
         total += fever_count

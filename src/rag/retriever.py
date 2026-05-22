@@ -51,6 +51,7 @@ class SentinelRetriever:
         """Lazy-load SentenceTransformer embedding model."""
         if self._embedder is None:
             from sentence_transformers import SentenceTransformer
+
             self._embedder = SentenceTransformer(self._embedding_model_name)
         return self._embedder
 
@@ -58,6 +59,7 @@ class SentinelRetriever:
         """Lazy-load CrossEncoder reranker."""
         if self._reranker is None:
             from sentence_transformers import CrossEncoder
+
             self._reranker = CrossEncoder(self._reranker_model_name)
         return self._reranker
 
@@ -73,7 +75,8 @@ class SentinelRetriever:
                 token = os.environ.get("CHROMA_TOKEN", "")
                 if token:
                     client = chromadb.HttpClient(
-                        host=host, port=port,
+                        host=host,
+                        port=port,
                         headers={"Authorization": f"Bearer {token}"},
                     )
                 else:
@@ -88,9 +91,7 @@ class SentinelRetriever:
         """Set collection directly (for testing with EphemeralClient)."""
         self._collection = collection
 
-    def _stage1_dense_retrieve(
-        self, query: str, n_results: int = 20
-    ) -> Dict[str, Any]:
+    def _stage1_dense_retrieve(self, query: str, n_results: int = 20) -> Dict[str, Any]:
         """
         Stage 1: Dense retrieval via ChromaDB cosine search.
 
@@ -155,9 +156,7 @@ class SentinelRetriever:
 
         return scored[:top_k]
 
-    def get_relevant_evidence(
-        self, query: str
-    ) -> Dict[str, Any]:
+    def get_relevant_evidence(self, query: str) -> Dict[str, Any]:
         """
         Full two-stage retrieval pipeline.
 
@@ -202,7 +201,9 @@ class SentinelRetriever:
         for item in reranked:
             idx = item["original_index"]
             reranked_docs.append(item["document"])
-            reranked_metas.append(stage1["metadatas"][idx] if idx < len(stage1["metadatas"]) else {})
+            reranked_metas.append(
+                stage1["metadatas"][idx] if idx < len(stage1["metadatas"]) else {}
+            )
             rerank_scores.append(item["rerank_score"])
 
         return {

@@ -11,8 +11,13 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from src.monitoring.metrics import (
-    CONTRADICTIONS_TOTAL, RAG_AVG_SIM, RAG_LATENCY,
-    RAG_REQUESTS, CHROMA_HITS, PREDICTIONS, LATENCY,
+    CONTRADICTIONS_TOTAL,
+    RAG_AVG_SIM,
+    RAG_LATENCY,
+    RAG_REQUESTS,
+    CHROMA_HITS,
+    PREDICTIONS,
+    LATENCY,
 )
 
 router = APIRouter(prefix="/fact-check", tags=["fact-check"])
@@ -66,8 +71,10 @@ class FullAnalysisResponse(BaseModel):
 
 
 def _fuse_verdicts(
-    ml_class: str, ml_conf: float,
-    rag_verdict: str, rag_conf: str,
+    ml_class: str,
+    ml_conf: float,
+    rag_verdict: str,
+    rag_conf: str,
 ) -> Dict[str, Any]:
     """
     Fuse ML classification with RAG verdict.
@@ -137,7 +144,9 @@ async def fact_check(request: FactCheckRequest):
 
     rag_pipeline = MODELS.get("rag_pipeline")
     if rag_pipeline is None:
-        raise HTTPException(status_code=503, detail="RAG pipeline not initialized. Build KB first.")
+        raise HTTPException(
+            status_code=503, detail="RAG pipeline not initialized. Build KB first."
+        )
 
     try:
         RAG_REQUESTS.inc()
@@ -177,6 +186,7 @@ async def full_analysis(request: FactCheckRequest):
 
     # --- ML Pipeline ---
     import torch
+
     ml_class = "REAL_NEWS"
     ml_conf = 0.5
 
@@ -188,7 +198,11 @@ async def full_analysis(request: FactCheckRequest):
     label_map = {0: "REAL_NEWS", 1: "FAKE_NEWS", 2: "SATIRE", 3: "SPAM"}
 
     cleaned = cleaner.clean(text) if cleaner else {"cleaned_text": text}
-    pos_result = pos_parser.parse(text) if pos_parser else {"adjective_density": 0.0, "adj_noun_ratio": 0.0}
+    pos_result = (
+        pos_parser.parse(text)
+        if pos_parser
+        else {"adjective_density": 0.0, "adj_noun_ratio": 0.0}
+    )
     adj_density = pos_result.get("adjective_density", 0.0)
 
     if extractor and mlp:
@@ -207,7 +221,9 @@ async def full_analysis(request: FactCheckRequest):
         feat_t = torch.FloatTensor(feat_vec).unsqueeze(0)
         mlp.eval()
         if feat_t.shape[1] != 504:
-            feat_t = torch.nn.functional.pad(feat_t, (0, max(0, 504 - feat_t.shape[1])))[:, :504]
+            feat_t = torch.nn.functional.pad(
+                feat_t, (0, max(0, 504 - feat_t.shape[1]))
+            )[:, :504]
         with torch.no_grad():
             logits = mlp(feat_t)
             probs = torch.softmax(logits, dim=-1)
@@ -243,7 +259,10 @@ async def full_analysis(request: FactCheckRequest):
     if sent_model:
         try:
             sr = sent_model.analyze(text, adj_density=adj_density)
-            sentiment = {"finbert": sr["finbert_sentiment"], "roberta": sr["roberta_sentiment"]}
+            sentiment = {
+                "finbert": sr["finbert_sentiment"],
+                "roberta": sr["roberta_sentiment"],
+            }
             manip_score = sr["manipulation_score"]
         except Exception:
             pass
@@ -302,5 +321,3 @@ async def full_analysis(request: FactCheckRequest):
         avg_retrieval_similarity=avg_sim,
         processing_time_ms=round(elapsed, 2),
     )
-
-

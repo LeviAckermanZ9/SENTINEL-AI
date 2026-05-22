@@ -34,6 +34,7 @@ class SummarizerModule:
         """Lazy-load BART summarization pipeline."""
         if self._bart_pipeline is None:
             from transformers import pipeline
+
             self._bart_pipeline = pipeline(
                 "summarization",
                 model="facebook/bart-large-cnn",
@@ -44,6 +45,7 @@ class SummarizerModule:
         """Lazy-load T5 summarization pipeline."""
         if self._t5_pipeline is None:
             from transformers import pipeline
+
             self._t5_pipeline = pipeline(
                 "summarization",
                 model="t5-small",
@@ -54,6 +56,7 @@ class SummarizerModule:
         """Lazy-load QA pipeline."""
         if self._qa_pipeline is None:
             from transformers import pipeline
+
             self._qa_pipeline = pipeline(
                 "question-answering",
                 model="deepset/roberta-base-squad2",
@@ -120,8 +123,12 @@ class SummarizerModule:
         Returns:
             Dict with bart_summary, t5_summary.
         """
-        bart_result = self.summarize(text, model="bart", max_length=max_length, min_length=min_length)
-        t5_result = self.summarize(text, model="t5", max_length=max_length, min_length=min_length)
+        bart_result = self.summarize(
+            text, model="bart", max_length=max_length, min_length=min_length
+        )
+        t5_result = self.summarize(
+            text, model="t5", max_length=max_length, min_length=min_length
+        )
 
         return {
             "bart_summary": bart_result["summary_text"],
@@ -191,6 +198,4 @@ class SummarizerModule:
         contexts: List[str],
     ) -> List[Dict[str, Any]]:
         """Answer multiple questions about corresponding contexts."""
-        return [
-            self.qa_on_article(q, c) for q, c in zip(questions, contexts)
-        ]
+        return [self.qa_on_article(q, c) for q, c in zip(questions, contexts)]

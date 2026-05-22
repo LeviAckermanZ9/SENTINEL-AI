@@ -134,12 +134,14 @@ class FeatureExtractor:
         perplexity = self.compute_bigram_perplexity_proxy(text)
 
         # Assemble 504-dim feature vector
-        extra_features = np.array([
-            adjective_density,
-            adj_noun_ratio,
-            perplexity,
-            float(topic_cluster),
-        ])
+        extra_features = np.array(
+            [
+                adjective_density,
+                adj_noun_ratio,
+                perplexity,
+                float(topic_cluster),
+            ]
+        )
         feature_vector = np.concatenate([tfidf_vector, extra_features])
 
         return {
@@ -181,12 +183,14 @@ class FeatureExtractor:
         topic_clusters = self.kmeans.predict(tfidf_matrix)
         perplexities = [self.compute_bigram_perplexity_proxy(t) for t in texts]
 
-        extra = np.column_stack([
-            adjective_densities,
-            adj_noun_ratios,
-            perplexities,
-            topic_clusters.astype(float),
-        ])
+        extra = np.column_stack(
+            [
+                adjective_densities,
+                adj_noun_ratios,
+                perplexities,
+                topic_clusters.astype(float),
+            ]
+        )
         feature_matrix = np.hstack([tfidf_matrix, extra])
 
         return {
@@ -200,7 +204,12 @@ class FeatureExtractor:
         if not self.is_fitted:
             raise RuntimeError("FeatureExtractor not fitted. Call fit() first.")
         tfidf_names = list(self.tfidf.get_feature_names_out())
-        extra_names = ["adjective_density", "adj_noun_ratio", "bigram_perplexity", "topic_cluster"]
+        extra_names = [
+            "adjective_density",
+            "adj_noun_ratio",
+            "bigram_perplexity",
+            "topic_cluster",
+        ]
         return tfidf_names + extra_names
 
     @property

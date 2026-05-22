@@ -32,6 +32,7 @@ class NERPipeline:
         """Lazy-load HuggingFace NER pipeline."""
         if self._ner_pipeline is None:
             from transformers import pipeline
+
             self._ner_pipeline = pipeline(
                 "ner",
                 model=self._ner_model_name,
@@ -43,13 +44,16 @@ class NERPipeline:
         """Lazy-load spaCy model."""
         if self._nlp is None:
             import spacy
+
             try:
                 self._nlp = spacy.load("en_core_web_sm")
             except OSError:
                 import subprocess, sys
+
                 subprocess.check_call(
                     [sys.executable, "-m", "spacy", "download", "en_core_web_sm"],
-                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
                 )
                 self._nlp = spacy.load("en_core_web_sm")
         return self._nlp
@@ -66,13 +70,15 @@ class NERPipeline:
 
         entities = []
         for ent in raw_entities:
-            entities.append({
-                "entity_group": ent["entity_group"],
-                "word": ent["word"],
-                "score": round(float(ent["score"]), 4),
-                "start": ent["start"],
-                "end": ent["end"],
-            })
+            entities.append(
+                {
+                    "entity_group": ent["entity_group"],
+                    "word": ent["word"],
+                    "score": round(float(ent["score"]), 4),
+                    "start": ent["start"],
+                    "end": ent["end"],
+                }
+            )
 
         return entities
 
@@ -87,12 +93,14 @@ class NERPipeline:
 
         entities = []
         for ent in doc.ents:
-            entities.append({
-                "text": ent.text,
-                "label": ent.label_,
-                "start_char": ent.start_char,
-                "end_char": ent.end_char,
-            })
+            entities.append(
+                {
+                    "text": ent.text,
+                    "label": ent.label_,
+                    "start_char": ent.start_char,
+                    "end_char": ent.end_char,
+                }
+            )
 
         return entities
 
@@ -122,7 +130,11 @@ class NERPipeline:
                 for child in token.rights:
                     if child.dep_ in ("dobj", "attr", "pobj", "oprd"):
                         compound = " ".join(
-                            [c.text for c in child.lefts if c.dep_ in ("compound", "amod")]
+                            [
+                                c.text
+                                for c in child.lefts
+                                if c.dep_ in ("compound", "amod")
+                            ]
                             + [child.text]
                         )
                         objects.append(compound)

@@ -11,10 +11,10 @@ from src.preprocessing.tokenizer import Tokenizer
 from src.preprocessing.pos_parser import PosParser
 from src.preprocessing.feature_extractor import FeatureExtractor
 
-
 # ================================================================
 # TextCleaner Tests
 # ================================================================
+
 
 class TestTextCleaner:
     """Tests for the TextCleaner class."""
@@ -109,6 +109,7 @@ class TestTextCleaner:
 # Tokenizer Tests
 # ================================================================
 
+
 class TestTokenizer:
     """Tests for the Tokenizer class."""
 
@@ -186,6 +187,7 @@ class TestTokenizer:
 # ================================================================
 # PosParser Tests
 # ================================================================
+
 
 class TestPosParser:
     """Tests for the PosParser class."""
@@ -268,6 +270,7 @@ class TestPosParser:
 # FeatureExtractor Tests
 # ================================================================
 
+
 class TestFeatureExtractor:
     """Tests for the FeatureExtractor class."""
 
@@ -291,7 +294,9 @@ class TestFeatureExtractor:
 
     def test_transform_returns_dict(self):
         self.extractor.fit(self.corpus)
-        result = self.extractor.transform("The president announced new economic policies.")
+        result = self.extractor.transform(
+            "The president announced new economic policies."
+        )
         assert isinstance(result, dict)
         assert "tfidf_vector" in result
         assert "topic_cluster" in result
@@ -315,7 +320,9 @@ class TestFeatureExtractor:
 
     def test_bigram_perplexity(self):
         self.extractor.fit(self.corpus)
-        result = self.extractor.transform("The quick brown fox jumps over the lazy dog.")
+        result = self.extractor.transform(
+            "The quick brown fox jumps over the lazy dog."
+        )
         assert 0.0 <= result["bigram_perplexity_proxy"] <= 1.0
 
     def test_transform_before_fit_raises(self):

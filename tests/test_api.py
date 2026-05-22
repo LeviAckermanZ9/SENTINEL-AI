@@ -37,11 +37,14 @@ class TestHealthEndpoint:
 
 class TestClassifyEndpoint:
     def test_classify_valid_text(self):
-        response = client.post("/classify", json={
-            "text": "The president of the United States signed a new executive order on climate change today.",
-            "include_explanation": False,
-            "include_summary": False,
-        })
+        response = client.post(
+            "/classify",
+            json={
+                "text": "The president of the United States signed a new executive order on climate change today.",
+                "include_explanation": False,
+                "include_summary": False,
+            },
+        )
         assert response.status_code == 200
         data = response.json()
         assert data["classification"] in ["REAL_NEWS", "FAKE_NEWS", "SATIRE", "SPAM"]
@@ -49,17 +52,23 @@ class TestClassifyEndpoint:
         assert data["processing_time_ms"] > 0
 
     def test_classify_too_short(self):
-        response = client.post("/classify", json={
-            "text": "Short text",
-        })
+        response = client.post(
+            "/classify",
+            json={
+                "text": "Short text",
+            },
+        )
         assert response.status_code == 422  # Pydantic validation
 
     def test_classify_returns_method(self):
-        response = client.post("/classify", json={
-            "text": "Breaking news: Scientists have discovered a new treatment for cancer that shows promising results.",
-            "include_explanation": False,
-            "include_summary": False,
-        })
+        response = client.post(
+            "/classify",
+            json={
+                "text": "Breaking news: Scientists have discovered a new treatment for cancer that shows promising results.",
+                "include_explanation": False,
+                "include_summary": False,
+            },
+        )
         assert response.status_code == 200
         data = response.json()
         assert "method" in data
@@ -67,9 +76,12 @@ class TestClassifyEndpoint:
 
 class TestFactCheckEndpoint:
     def test_factcheck_rag_only(self):
-        response = client.post("/fact-check/", json={
-            "text": "Scientists confirm that 5G technology causes COVID-19 infections in humans.",
-        })
+        response = client.post(
+            "/fact-check/",
+            json={
+                "text": "Scientists confirm that 5G technology causes COVID-19 infections in humans.",
+            },
+        )
         # May return 503 if RAG not built — both are valid
         assert response.status_code in (200, 503)
         if response.status_code == 200:
@@ -77,15 +89,21 @@ class TestFactCheckEndpoint:
             assert data["rag_verdict"] in ["SUPPORTED", "CONTRADICTED", "UNVERIFIABLE"]
 
     def test_factcheck_too_short(self):
-        response = client.post("/fact-check/", json={
-            "text": "Short text",
-        })
+        response = client.post(
+            "/fact-check/",
+            json={
+                "text": "Short text",
+            },
+        )
         assert response.status_code == 422
 
     def test_full_analysis(self):
-        response = client.post("/fact-check/full-analysis", json={
-            "text": "The World Health Organization declared a global pandemic due to the new virus variant.",
-        })
+        response = client.post(
+            "/fact-check/full-analysis",
+            json={
+                "text": "The World Health Organization declared a global pandemic due to the new virus variant.",
+            },
+        )
         # May return 200 even without RAG (uses defaults)
         assert response.status_code == 200
         data = response.json()

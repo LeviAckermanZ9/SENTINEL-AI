@@ -8,10 +8,10 @@ import pytest
 
 from src.rag.rag_chain import FactCheckOutputParser
 
-
 # ================================================================
 # FactCheckOutputParser Tests
 # ================================================================
+
 
 class TestFactCheckOutputParser:
     """Tests for FactCheckOutputParser regex parsing."""
@@ -93,16 +93,19 @@ class TestFactCheckOutputParser:
 # ClaimExtractor Tests (uses spaCy only — no HF download in tests)
 # ================================================================
 
+
 class TestClaimExtractor:
     """Tests for ClaimExtractor structure (no zero-shot model download)."""
 
     def test_import(self):
         from src.rag.claim_extractor import ClaimExtractor
+
         extractor = ClaimExtractor()
         assert extractor is not None
 
     def test_split_sentences(self):
         from src.rag.claim_extractor import ClaimExtractor
+
         extractor = ClaimExtractor()
         sentences = extractor._split_sentences(
             "First sentence here. Second sentence follows. Third one too."
@@ -111,6 +114,7 @@ class TestClaimExtractor:
 
     def test_extract_triplet_from_sentence(self):
         from src.rag.claim_extractor import ClaimExtractor
+
         extractor = ClaimExtractor()
         triplet = extractor._extract_triplet_from_sentence(
             "Scientists confirmed the discovery of a new species."
@@ -123,6 +127,7 @@ class TestClaimExtractor:
         """Test that extract_claim_triplet returns proper structure
         (skips zero-shot model — uses single sentence fast path)."""
         from src.rag.claim_extractor import ClaimExtractor
+
         extractor = ClaimExtractor()
         # Single sentence → skips zero-shot scoring
         result = extractor.extract_claim_triplet(
@@ -140,6 +145,7 @@ class TestClaimExtractor:
 # ================================================================
 # Retriever Integration Tests (EphemeralClient — no external service)
 # ================================================================
+
 
 class TestRetrieverIntegration:
     """Tests using chromadb.EphemeralClient with test documents."""
@@ -168,11 +174,36 @@ class TestRetrieverIntegration:
         ]
 
         test_metas = [
-            {"source": "nasa", "verdict": "true", "speaker": "NASA", "original_claim": "Moon landing was real"},
-            {"source": "who", "verdict": "false", "speaker": "WHO", "original_claim": "5G causes COVID"},
-            {"source": "science", "verdict": "false", "speaker": "scientists", "original_claim": "Earth is flat"},
-            {"source": "cdc", "verdict": "false", "speaker": "CDC", "original_claim": "Vaccines cause autism"},
-            {"source": "ipcc", "verdict": "true", "speaker": "IPCC", "original_claim": "Climate change human-caused"},
+            {
+                "source": "nasa",
+                "verdict": "true",
+                "speaker": "NASA",
+                "original_claim": "Moon landing was real",
+            },
+            {
+                "source": "who",
+                "verdict": "false",
+                "speaker": "WHO",
+                "original_claim": "5G causes COVID",
+            },
+            {
+                "source": "science",
+                "verdict": "false",
+                "speaker": "scientists",
+                "original_claim": "Earth is flat",
+            },
+            {
+                "source": "cdc",
+                "verdict": "false",
+                "speaker": "CDC",
+                "original_claim": "Vaccines cause autism",
+            },
+            {
+                "source": "ipcc",
+                "verdict": "true",
+                "speaker": "IPCC",
+                "original_claim": "Climate change human-caused",
+            },
         ]
 
         embeddings = embedder.encode(test_docs, convert_to_numpy=True).tolist()
@@ -216,8 +247,12 @@ class TestRetrieverIntegration:
         )
 
         docs = results["documents"][0]
-        found_moon = any("moon" in doc.lower() and "landing" in doc.lower() for doc in docs)
-        assert found_moon, f"Moon landing doc not in top 3. Got: {[d[:50] for d in docs]}"
+        found_moon = any(
+            "moon" in doc.lower() and "landing" in doc.lower() for doc in docs
+        )
+        assert (
+            found_moon
+        ), f"Moon landing doc not in top 3. Got: {[d[:50] for d in docs]}"
 
     def test_5g_query_returns_relevant(self):
         collection, embedder = self._create_test_collection()
@@ -252,6 +287,7 @@ class TestRetrieverIntegration:
 # ================================================================
 # API Endpoint Stubs (skip if API not initialized)
 # ================================================================
+
 
 class TestAPIEndpoints:
     """Stub tests for API endpoints — marked skip if not available."""

@@ -32,6 +32,7 @@ class ClaimExtractor:
         """Lazy-load zero-shot pipeline."""
         if self._zero_shot is None:
             from transformers import pipeline
+
             self._zero_shot = pipeline(
                 "zero-shot-classification",
                 model="facebook/bart-large-mnli",
@@ -42,13 +43,16 @@ class ClaimExtractor:
         """Lazy-load spaCy model."""
         if self._nlp is None:
             import spacy
+
             try:
                 self._nlp = spacy.load("en_core_web_sm")
             except OSError:
                 import subprocess, sys
+
                 subprocess.check_call(
                     [sys.executable, "-m", "spacy", "download", "en_core_web_sm"],
-                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
                 )
                 self._nlp = spacy.load("en_core_web_sm")
         return self._nlp
@@ -57,7 +61,9 @@ class ClaimExtractor:
         """Split text into sentences using spaCy."""
         nlp = self._load_spacy()
         doc = nlp(text)
-        sentences = [sent.text.strip() for sent in doc.sents if len(sent.text.strip()) > 10]
+        sentences = [
+            sent.text.strip() for sent in doc.sents if len(sent.text.strip()) > 10
+        ]
         return sentences if sentences else [text.strip()]
 
     def extract_primary_claim(self, text: str) -> Dict[str, Any]:
@@ -91,7 +97,9 @@ class ClaimExtractor:
         scored = []
 
         for sent in sentences:
-            result = pipe(sent, candidate_labels=["factual claim", "opinion", "question"])
+            result = pipe(
+                sent, candidate_labels=["factual claim", "opinion", "question"]
+            )
             claim_idx = result["labels"].index("factual claim")
             score = result["scores"][claim_idx]
             scored.append({"sentence": sent, "score": round(score, 4)})
@@ -132,7 +140,11 @@ class ClaimExtractor:
                 for child in token.rights:
                     if child.dep_ in ("dobj", "attr", "pobj", "oprd"):
                         compound = " ".join(
-                            [c.text for c in child.lefts if c.dep_ in ("compound", "amod")]
+                            [
+                                c.text
+                                for c in child.lefts
+                                if c.dep_ in ("compound", "amod")
+                            ]
                             + [child.text]
                         )
                         obj = compound

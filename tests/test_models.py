@@ -14,10 +14,10 @@ from src.models.autoencoder import NewsAutoencoder
 from src.models.gan_augmentor import Generator, Discriminator
 from src.models.vae_explorer import VAE
 
-
 # ================================================================
 # MLP Tests
 # ================================================================
+
 
 class TestMLPClassifier:
     def test_forward_shape(self):
@@ -61,29 +61,38 @@ class TestMLPClassifier:
 # BiLSTM Tests
 # ================================================================
 
+
 class TestBiLSTMAttention:
     def test_forward_shape(self):
-        model = BiLSTMAttention(vocab_size=30000, embed_dim=100, hidden_dim=256, num_classes=3)
+        model = BiLSTMAttention(
+            vocab_size=30000, embed_dim=100, hidden_dim=256, num_classes=3
+        )
         x = torch.randint(0, 30000, (4, 20))
         logits = model(x)
         assert logits.shape == (4, 3)
 
     def test_return_attention(self):
-        model = BiLSTMAttention(vocab_size=30000, embed_dim=100, hidden_dim=256, num_classes=3)
+        model = BiLSTMAttention(
+            vocab_size=30000, embed_dim=100, hidden_dim=256, num_classes=3
+        )
         x = torch.randint(0, 30000, (4, 20))
         logits, attn = model(x, return_attention=True)
         assert logits.shape == (4, 3)
         assert attn.shape == (4, 20)
 
     def test_attention_sums_to_one(self):
-        model = BiLSTMAttention(vocab_size=30000, embed_dim=100, hidden_dim=256, num_classes=3)
+        model = BiLSTMAttention(
+            vocab_size=30000, embed_dim=100, hidden_dim=256, num_classes=3
+        )
         x = torch.randint(0, 30000, (4, 20))
         _, attn = model(x, return_attention=True)
         sums = attn.sum(dim=-1)
         assert torch.allclose(sums, torch.ones(4), atol=1e-5)
 
     def test_different_seq_lengths(self):
-        model = BiLSTMAttention(vocab_size=30000, embed_dim=100, hidden_dim=256, num_classes=3)
+        model = BiLSTMAttention(
+            vocab_size=30000, embed_dim=100, hidden_dim=256, num_classes=3
+        )
         for seq_len in [10, 50, 100]:
             x = torch.randint(0, 30000, (2, seq_len))
             logits, attn = model(x, return_attention=True)
@@ -94,6 +103,7 @@ class TestBiLSTMAttention:
 # ================================================================
 # TextCNN Tests
 # ================================================================
+
 
 class TestTextCNN:
     def test_forward_shape(self):
@@ -120,6 +130,7 @@ class TestTextCNN:
 # ================================================================
 # ImageCNN Tests
 # ================================================================
+
 
 class TestImageCNN:
     def test_forward_shape(self):
@@ -153,6 +164,7 @@ class TestImageCNN:
 # ================================================================
 # Autoencoder Tests
 # ================================================================
+
 
 class TestAutoencoder:
     def test_forward_shape(self):
@@ -188,6 +200,7 @@ class TestAutoencoder:
 # ================================================================
 # GAN Tests
 # ================================================================
+
 
 class TestGAN:
     def test_generator_shape(self):
@@ -226,6 +239,7 @@ class TestGAN:
 # ================================================================
 # VAE Tests
 # ================================================================
+
 
 class TestVAE:
     def test_forward_shape(self):

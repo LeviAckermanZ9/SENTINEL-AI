@@ -61,6 +61,7 @@ class TransformerClassifier:
         """Lazy-load zero-shot classification pipeline."""
         if self._zero_shot_pipeline is None:
             from transformers import pipeline
+
             self._zero_shot_pipeline = pipeline(
                 "zero-shot-classification",
                 model=self.ZERO_SHOT_MODEL,
@@ -70,7 +71,9 @@ class TransformerClassifier:
     def _load_model_and_tokenizer(self, model_key: str, num_labels: int = 4):
         """Lazy-load a fine-tuning model and tokenizer."""
         if model_key not in self.MODELS:
-            raise ValueError(f"Unknown model key '{model_key}'. Choose from: {list(self.MODELS.keys())}")
+            raise ValueError(
+                f"Unknown model key '{model_key}'. Choose from: {list(self.MODELS.keys())}"
+            )
 
         if model_key not in self._loaded_models:
             from transformers import AutoModelForSequenceClassification, AutoTokenizer
@@ -78,9 +81,13 @@ class TransformerClassifier:
             config = self.MODELS[model_key]
             model_name = config["name"]
 
-            self._loaded_tokenizers[model_key] = AutoTokenizer.from_pretrained(model_name)
-            self._loaded_models[model_key] = AutoModelForSequenceClassification.from_pretrained(
-                model_name, num_labels=num_labels
+            self._loaded_tokenizers[model_key] = AutoTokenizer.from_pretrained(
+                model_name
+            )
+            self._loaded_models[model_key] = (
+                AutoModelForSequenceClassification.from_pretrained(
+                    model_name, num_labels=num_labels
+                )
             )
 
         return self._loaded_models[model_key], self._loaded_tokenizers[model_key]
@@ -136,12 +143,14 @@ class TransformerClassifier:
 
         for text in texts:
             result = pipe(text, candidate_labels)
-            predictions.append({
-                "text": text[:100],
-                "predicted": result["labels"][0],
-                "confidence": result["scores"][0],
-                "all_scores": dict(zip(result["labels"], result["scores"])),
-            })
+            predictions.append(
+                {
+                    "text": text[:100],
+                    "predicted": result["labels"][0],
+                    "confidence": result["scores"][0],
+                    "all_scores": dict(zip(result["labels"], result["scores"])),
+                }
+            )
 
         return {"predictions": predictions, "total": len(predictions)}
 

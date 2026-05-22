@@ -39,9 +39,11 @@ class PosParser:
             self.nlp = spacy.load(model_name)
         except OSError:
             import subprocess, sys
+
             subprocess.check_call(
                 [sys.executable, "-m", "spacy", "download", model_name],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
             )
             self.nlp = spacy.load(model_name)
 
@@ -59,14 +61,19 @@ class PosParser:
                 for child in token.lefts:
                     if child.dep_ in ("nsubj", "nsubjpass"):
                         compound = " ".join(
-                            [c.text for c in child.lefts if c.dep_ == "compound"] + [child.text]
+                            [c.text for c in child.lefts if c.dep_ == "compound"]
+                            + [child.text]
                         )
                         subjects.append(compound)
                 objects = []
                 for child in token.rights:
                     if child.dep_ in ("dobj", "attr", "pobj", "oprd"):
                         compound = " ".join(
-                            [c.text for c in child.lefts if c.dep_ in ("compound", "amod")]
+                            [
+                                c.text
+                                for c in child.lefts
+                                if c.dep_ in ("compound", "amod")
+                            ]
                             + [child.text]
                         )
                         objects.append(compound)
@@ -113,9 +120,14 @@ class PosParser:
         """Run full POS parsing pipeline. Returns pos_tags, dep_triplets, metrics."""
         if not text or not isinstance(text, str):
             return {
-                "pos_tags": [], "dep_triplets": [], "adjective_density": 0.0,
-                "adj_noun_ratio": 0.0, "temporal_matches": [], "pos_distribution": {},
-                "num_sentences": 0, "num_tokens": 0,
+                "pos_tags": [],
+                "dep_triplets": [],
+                "adjective_density": 0.0,
+                "adj_noun_ratio": 0.0,
+                "temporal_matches": [],
+                "pos_distribution": {},
+                "num_sentences": 0,
+                "num_tokens": 0,
             }
         doc = self.nlp(text)
         return {
@@ -133,14 +145,16 @@ class PosParser:
         """Parse a batch of texts using spaCy pipe."""
         results = []
         for doc in self.nlp.pipe(texts, batch_size=32):
-            results.append({
-                "pos_tags": self.get_pos_tags(doc),
-                "dep_triplets": self.get_dep_triplets(doc),
-                "adjective_density": self.compute_adjective_density(doc),
-                "adj_noun_ratio": self.compute_adj_noun_ratio(doc),
-                "temporal_matches": self.find_temporal_patterns(doc.text),
-                "pos_distribution": self.get_pos_distribution(doc),
-                "num_sentences": len(list(doc.sents)),
-                "num_tokens": len(doc),
-            })
+            results.append(
+                {
+                    "pos_tags": self.get_pos_tags(doc),
+                    "dep_triplets": self.get_dep_triplets(doc),
+                    "adjective_density": self.compute_adjective_density(doc),
+                    "adj_noun_ratio": self.compute_adj_noun_ratio(doc),
+                    "temporal_matches": self.find_temporal_patterns(doc.text),
+                    "pos_distribution": self.get_pos_distribution(doc),
+                    "num_sentences": len(list(doc.sents)),
+                    "num_tokens": len(doc),
+                }
+            )
         return results
